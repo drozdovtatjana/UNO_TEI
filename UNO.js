@@ -1,50 +1,101 @@
-document.getElementById('start-game-button').addEventListener('click', startGame);
+document.addEventListener('DOMContentLoaded', () => {
+    initializeModal();
+    initializeStartGameButton();
+});
 
-// Function to start the game
-function startGame() {
-    const players = ["1", "2", "3", "4"];
+// Initialize Player Name Modal on Page Load
+function initializeModal() {
+    $('#playerNamesModal').modal({
+        backdrop: 'static',
+        keyboard: false
+    });
 
-    // Make an API call to start the game
-    fetch('https://nowaunoweb.azurewebsites.net/api/game/start', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(players)
-    })
-    .then(response => response.json())  // Parse response as JSON
-    .then(data => {
-        // Show game ID if available
-        const gameIdElement = document.getElementById('game-id');
-        if (data.Id) {
-            gameIdElement.textContent = `Spiel-ID: ${data.Id}`;
-        } else {
-            gameIdElement.textContent = "Spiel-ID nicht verfügbar";
-        }
+    const playerInputs = document.getElementById("playerInputs");
 
-        // Show "Actual Player Cards" section after game starts
-        document.getElementById('player-cards-title').style.display = 'block';
-
-        // Display player cards
-        displayCards(data.Players && data.Players[0] && data.Players[0].Cards);
-    })
-    .catch(error => console.error('Fehler:', error));  // Handle any errors
+    // Create player input fields dynamically
+    for (let i = 1; i <= 4; i++) {
+        playerInputs.innerHTML += `
+            <div class="form-group">
+                <label for="player${i}Name">Player ${i} Name</label>
+                <input type="text" class="form-control" id="player${i}Name" placeholder="Enter Player ${i} Name" required>
+            </div>
+        `;
+    }
 }
 
-// Function to map color and text to the appropriate image filename
+// Enable Start Button Only When All Fields Are Filled
+function initializeStartGameButton() {
+    const playerInputs = Array.from(document.querySelectorAll('#playerInputs input'));
+    const startGameButton = document.getElementById('start-game-button');
+
+    playerInputs.forEach(input => input.addEventListener('input', () => {
+        // Enable button if all player name fields are filled
+        startGameButton.disabled = !playerInputs.every(input => input.value.trim() !== "");
+    }));
+
+    startGameButton.addEventListener('click', () => {
+        startGame();
+        $('#playerNamesModal').modal('hide');
+    });
+}
+
+// Start the Game
+async function startGame() {
+    const playerNames = getPlayerNames();
+
+    try {
+        const response = await fetch("https://nowaunoweb.azurewebsites.net/api/game/start", {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(playerNames)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setupGame(data, playerNames);
+        } else {
+            alert("Error starting the game.");
+        }
+    } catch (error) {
+        alert("Network error. Please try again later.");
+    }
+}
+
+// Get Player Names
+function getPlayerNames() {
+    return Array.from({ length: 4 }, (_, i) => 
+        document.getElementById(`player${i + 1}Name`).value || `Player ${i + 1}`
+    );
+}
+
+// Set Up Game Table with Player Names and Cards
+function setupGame(data, playerNames) {
+    document.getElementById("playersContainer").style.display = "block";
+    document.getElementById("playerContainers").innerHTML = playerNames.map((name, index) => `
+        <div id="player${index + 1}Container">
+            <h4>${name}</h4>
+            <div id="cardsPlayer${index + 1}" class="card-container"></div>
+        </div>
+    `).join('');
+
+    displayTopCard(data.TopCard);
+    data.Players.forEach((player, index) => displayCards(player.Cards, index));
+}
+
+// Function to map color and text to the appropriate filename prefix
 function getCardImageFileName(color, text) {
     const colorMap = {
         "Blue": "b",
         "Red": "r",
         "Green": "g",
         "Yellow": "y",
-        "Wild": "w"
+        "WildColor": "w"
     };
-
+    const colorPrefix = colorMap[color] || "";
     const textMap = {
         "Reverse": "r",
         "Skip": "s",
-        "Draw Two": "d2",
+        "Draw2": "d2",
         "Zero": "0",
         "One": "1",
         "Two": "2",
@@ -55,55 +106,48 @@ function getCardImageFileName(color, text) {
         "Seven": "7",
         "Eight": "8",
         "Nine": "9",
-        "Wild Draw Four": "wd4",
-        "Wild Card": "wild"
+        "Draw4": "d4"
     };
+    const textSuffix = textMap[text] || text; // Default to text if not special
 
-    // Get the prefix for color
-    const colorPrefix = colorMap[color] || "";
-    
-    // Get the suffix for text
-    const textSuffix = textMap[text] || text.toLowerCase();  // Convert number to string or default text
-    
-    return `${colorPrefix}${textSuffix}.png`;  // Construct image filename
+    return `${colorPrefix}${textSuffix}.png`;
 }
 
-// Function to display card images on the webpage
-function displayCards(cards) {
-    const container = document.getElementById("player-hand");
+// Display the Top Card
+function displayTopCard(topCard) {
+    if (topCard) {
+        const img = document.createElement("img");
+        img.src = getCardImageFileName(topCard.Color, topCard.Text);
+        img.alt = `${topCard.Color} ${topCard.Text}`;
+        img.onerror = () => img.src = 'cards/r3.png';  // Default image on error
+
+        const topCardContainer = document.getElementById("topCard");
+        topCardContainer.innerHTML = "";  // Clear previous top card
+        topCardContainer.appendChild(img);
+    } else {
+        console.log("Top card is not available or has an incorrect format.");
+    }
+}
+
+// Function to display card images based on card properties
+function displayCards(cards, playerIndex) {
+    const container = document.getElementById(`cardsPlayer${playerIndex + 1}`);
     container.innerHTML = ""; // Clear previous cards
 
-    if (!cards || cards.length === 0) {
-        const li = document.createElement('li');
-        li.textContent = "Keine Karten verfügbar";
-        container.appendChild(li);
-        return;
-    }
-
     cards.forEach(card => {
-        // Get the image filename based on card properties
         const imgFileName = getCardImageFileName(card.Color, card.Text);
-        const imgUrl = `cards/${imgFileName}`;
+        const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
 
-        // Create an image element
         const img = document.createElement("img");
         img.src = imgUrl;
         img.alt = `${card.Color} ${card.Text}`;
-        img.style.width = "50px";  // Standardize width of cards
-        img.style.height = "auto"; // Keep the aspect ratio intact
+        img.style.width = "100px"; // Adjust the width as needed
+        img.style.height = "auto"; // Keep aspect ratio
 
-        // Handle image error and provide fallback image
-        img.onerror = function() {
-            console.log(`Error loading image: ${img.src}`);
-            img.src = 'cards/r3.png'; // Fallback image if the specific image is not found
-        };
-
-        // Append the image to the list item
-        const li = document.createElement("li");
-        li.appendChild(img);
-        container.appendChild(li);
+        container.appendChild(img);
     });
 }
+
 
             // Define a pattern for the image URLs (images hosted on the Azure server)
             return `https://nowaunoweb.azurewebsites.net/Cards/${color}_${text}.png`; // Adjust the path if necessary
