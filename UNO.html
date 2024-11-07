@@ -1,12 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="UNO_TEI/UNO.js"></script>
-
     <title>UNO</title>
 </head>
 
@@ -17,6 +14,10 @@
 
     <h2>Game-ID:</h2>
     <p id="game-id">No game started</p>
+
+    <!-- Initially hidden, will be shown after game starts -->
+    <h2 id="player-cards-title" style="display:none;" onclick="startGame()">Actual Player Cards:</h2>
+    <ul id="player-hand"></ul>
 
 </body>
 
