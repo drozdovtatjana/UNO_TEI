@@ -1,84 +1,82 @@
-
 #cardsContainer {
-            display: none; /* Hide container initially */
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+    display: none; /* Hide container initially */
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
 /* Container für die nicht aktiven Spieler */
 .player-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+display: flex;
+align-items: center;
+margin-bottom: 20px;
 }
 
 /* Spielername */
 .player-name {
-    font-weight: bold;
-    margin-right: 15px;
+font-weight: bold;
+margin-right: 15px;
 }
 
 /* Flexbox für die Karten der nicht aktiven Spieler */
 .hidden-cards-container {
-    display: flex;
-    position: relative;
-    width: 80vw; /* Gesamtbreite, die die Karten abdecken */
-    height: 160px; /* Höhe passend zur Kartenhöhe */
-    overflow: visible; /* Überschreiten der Containerbreite erlauben */
+display: flex;
+position: relative;
+width: 80vw; /* Gesamtbreite, die die Karten abdecken */
+height: 160px; /* Höhe passend zur Kartenhöhe */
+overflow: visible; /* Überschreiten der Containerbreite erlauben */
 }
 
 /* Verdeckte Karten */
 .hidden-card {
-    width: 100px; /* Standardgröße der Karte */
-    height: 150px; /* Standardhöhe der Karte */
-    background-image: url('https://nowaunoweb.azurewebsites.net/Content/back.png'); /* Bild der Kartenrückseite */
-    background-size: cover;
-    background-position: center;
-    position: absolute;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    transition: transform 0.2s; /* Animation bei Kartenbewegung */
+width: 100px; /* Standardgröße der Karte */
+height: 150px; /* Standardhöhe der Karte */
+background-image: url('https://nowaunoweb.azurewebsites.net/Content/back.png'); /* Bild der Kartenrückseite */
+background-size: cover;
+background-position: center;
+position: absolute;
+margin-top: 5px;
+margin-bottom: 5px;
+transition: transform 0.2s; /* Animation bei Kartenbewegung */
 }
 
 /* Staffelung der Karten durch z-index und left */
 .hidden-cards-container .hidden-card:nth-child(1) {
-    left: 0px;
-    z-index: 1;
+left: 0px;
+z-index: 1;
 }
 
 .hidden-cards-container .hidden-card:nth-child(2) {
-    left: 20px; /* Verschiebung der zweiten Karte */
-    z-index: 2; /* Z-Index der zweiten Karte */
+left: 20px; /* Verschiebung der zweiten Karte */
+z-index: 2; /* Z-Index der zweiten Karte */
 }
 
 .hidden-cards-container .hidden-card:nth-child(3) {
-    left: 40px;
-    z-index: 3;
+left: 40px;
+z-index: 3;
 }
 
 .hidden-cards-container .hidden-card:nth-child(4) {
-    left: 60px;
-    z-index: 4;
+left: 60px;
+z-index: 4;
 }
 
 .hidden-cards-container .hidden-card:nth-child(5) {
-    left: 80px;
-    z-index: 5;
+left: 80px;
+z-index: 5;
 }
 
 /* Top Card Styling */
 #topCard {
-    margin-top: 20px;
-    width: 100px;
-    height: auto;
-    display: none; /* Initially hidden */
+margin-top: 20px;
+width: 100px;
+height: auto;
+display: none; /* Initially hidden */
 }
 
-    /* Top Card Styling */
-    #topCard {
-        margin-top: 20px;
-        width: 100px;
-        height: auto;
-        display: none; /* Initially hidden */
-    }
- 
+/* Top Card Styling */
+#topCard {
+margin-top: 20px;
+width: 100px;
+height: auto;
+display: none; /* Initially hidden */
+}
