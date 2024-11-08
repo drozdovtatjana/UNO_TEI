@@ -1,155 +1,141 @@
-document.addEventListener('DOMContentLoaded', () => {
-    initializeModal();
-    initializeStartGameButton();
-});
+ 
+        document.getElementById("startGameBtn").addEventListener("click", startGame);
 
-// Initialize Player Name Modal on Page Load
-function initializeModal() {
-    $('#playerNamesModal').modal({
-        backdrop: 'static',
-        keyboard: false
-    });
+        // Funktion zum Starten des Spiels
+        async function startGame() {
+            try {
+                const response = await fetch("https://nowaunoweb.azurewebsites.net/api/game/start", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify([
+                        "Player One",
+                        "Player Two",
+                        "Player Three",
+                        "Player Four"
+                    ])
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Spiel erfolgreich gestartet:", data);
+                    alert("Spiel erfolgreich gestartet! Spiel ID: " + data.Id);
 
-    const playerInputs = document.getElementById("playerInputs");
+                    // Zeige die Handkarten des aktiven Spielers an
+                    document.getElementById("cardsContainer").style.display = "flex";
+                    displayCards(data.Players[0].Cards);
 
-    // Create player input fields dynamically
-    for (let i = 1; i <= 4; i++) {
-        playerInputs.innerHTML += `
-            <div class="form-group">
-                <label for="player${i}Name">Player ${i} Name</label>
-                <input type="text" class="form-control" id="player${i}Name" placeholder="Enter Player ${i} Name" required>
-            </div>
-        `;
-    }
-}
+                    // Zeige verdeckte Karten für die nicht aktiven Spieler an
+                    displayHiddenCardsForOtherPlayers(data.Players, 0);
 
-// Enable Start Button Only When All Fields Are Filled
-function initializeStartGameButton() {
-    const playerInputs = Array.from(document.querySelectorAll('#playerInputs input'));
-    const startGameButton = document.getElementById('start-game-button');
+                    // Zeige die "Top Card" an
+                    displayTopCard(data.TopCard);
 
-    playerInputs.forEach(input => input.addEventListener('input', () => {
-        // Enable button if all player name fields are filled
-        startGameButton.disabled = !playerInputs.every(input => input.value.trim() !== "");
-    }));
-
-    startGameButton.addEventListener('click', () => {
-        startGame();
-        $('#playerNamesModal').modal('hide');
-    });
-}
-
-// Start the Game
-async function startGame() {
-    const playerNames = getPlayerNames();
-
-    try {
-        const response = await fetch("https://nowaunoweb.azurewebsites.net/api/game/start", {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(playerNames)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            setupGame(data, playerNames);
-        } else {
-            alert("Error starting the game.");
+                } else {
+                    console.error("Fehler beim Starten des Spiels:", response.status);
+                    alert("Fehler beim Starten des Spiels.");
+                }
+            } catch (error) {
+                console.error("Netzwerkfehler:", error);
+                alert("Netzwerkfehler. Bitte versuchen Sie es später erneut.");
+            }
         }
-    } catch (error) {
-        alert("Network error. Please try again later.");
-    }
-}
 
-// Get Player Names
-function getPlayerNames() {
-    return Array.from({ length: 4 }, (_, i) => 
-        document.getElementById(`player${i + 1}Name`).value || `Player ${i + 1}`
-    );
-}
+        // Funktion zur Anzeige der Handkarten des aktiven Spielers
+        function displayCards(cards) {
+            const container = document.getElementById("cardsContainer");
+            container.innerHTML = ""; // Lösche vorhandene Karten
 
-// Set Up Game Table with Player Names and Cards
-function setupGame(data, playerNames) {
-    document.getElementById("playersContainer").style.display = "block";
-    document.getElementById("playerContainers").innerHTML = playerNames.map((name, index) => `
-        <div id="player${index + 1}Container">
-            <h4>${name}</h4>
-            <div id="cardsPlayer${index + 1}" class="card-container"></div>
-        </div>
-    `).join('');
+            cards.forEach(card => {
+                const imgFileName = getCardImageFileName(card.Color, card.Text);
+                const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
 
-    displayTopCard(data.TopCard);
-    data.Players.forEach((player, index) => displayCards(player.Cards, index));
-}
+                const img = document.createElement("img");
+                img.src = imgUrl;
+                img.alt = `${card.Color} ${card.Text}`;
+                img.style.width = "100px";
+                img.style.height = "auto";
 
-// Function to map color and text to the appropriate filename prefix
-function getCardImageFileName(color, text) {
-    const colorMap = {
-        "Blue": "b",
-        "Red": "r",
-        "Green": "g",
-        "Yellow": "y",
-        "WildColor": "w"
-    };
-    const colorPrefix = colorMap[color] || "";
-    const textMap = {
-        "Reverse": "r",
-        "Skip": "s",
-        "Draw2": "d2",
-        "Zero": "0",
-        "One": "1",
-        "Two": "2",
-        "Three": "3",
-        "Four": "4",
-        "Five": "5",
-        "Six": "6",
-        "Seven": "7",
-        "Eight": "8",
-        "Nine": "9",
-        "Draw4": "d4"
-    };
-    const textSuffix = textMap[text] || text; // Default to text if not special
-
-    return `${colorPrefix}${textSuffix}.png`;
-}
-
-// Display the Top Card
-function displayTopCard(topCard) {
-    if (topCard) {
-        const img = document.createElement("img");
-        img.src = getCardImageFileName(topCard.Color, topCard.Text);
-        img.alt = `${topCard.Color} ${topCard.Text}`;
-        img.onerror = () => img.src = 'cards/r3.png';  // Default image on error
-
-        const topCardContainer = document.getElementById("topCard");
-        topCardContainer.innerHTML = "";  // Clear previous top card
-        topCardContainer.appendChild(img);
-    } else {
-        console.log("Top card is not available or has an incorrect format.");
-    }
-}
-
-// Function to display card images based on card properties
-function displayCards(cards, playerIndex) {
-    const container = document.getElementById(`cardsPlayer${playerIndex + 1}`);
-    container.innerHTML = ""; // Clear previous cards
-
-    cards.forEach(card => {
-        const imgFileName = getCardImageFileName(card.Color, card.Text);
-        const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
-
-        const img = document.createElement("img");
-        img.src = imgUrl;
-        img.alt = `${card.Color} ${card.Text}`;
-        img.style.width = "100px"; // Adjust the width as needed
-        img.style.height = "auto"; // Keep aspect ratio
-
-        container.appendChild(img);
-    });
-}
-
-
-            // Define a pattern for the image URLs (images hosted on the Azure server)
-            return `https://nowaunoweb.azurewebsites.net/Cards/${color}_${text}.png`; // Adjust the path if necessary
+                container.appendChild(img);
+            });
         }
+
+        // Funktion zur Anzeige der verdeckten Karten und Namen der nicht aktiven Spieler
+        function displayHiddenCardsForOtherPlayers(players, activePlayerIndex) {
+            const otherPlayersContainer = document.getElementById("otherPlayersContainer");
+            otherPlayersContainer.innerHTML = ""; // Vorherige Spieler-Container löschen
+
+            players.forEach((player, index) => {
+                if (index !== activePlayerIndex) {
+                    // Spielercontainer erstellen
+                    const playerContainer = document.createElement("div");
+                    playerContainer.classList.add("player-container");
+
+                    // Spielername hinzufügen
+                    const playerName = document.createElement("div");
+                    playerName.classList.add("player-name");
+                    playerName.textContent = player.Player;
+                    playerContainer.appendChild(playerName);
+
+                    // Kartencontainer erstellen und verdeckte Karten hinzufügen
+                    const hiddenCardsContainer = document.createElement("div");
+                    hiddenCardsContainer.classList.add("hidden-cards-container");
+
+                    player.Cards.forEach(() => {
+                        const hiddenCard = document.createElement("div");
+                        hiddenCard.classList.add("hidden-card");
+                        hiddenCardsContainer.appendChild(hiddenCard);
+                    });
+
+                    // Kartencontainer und Spielername zum Hauptcontainer hinzufügen
+                    playerContainer.appendChild(hiddenCardsContainer);
+                    otherPlayersContainer.appendChild(playerContainer);
+                }
+            });
+        }
+
+        // Funktion zur Anzeige der "Top Card" auf dem Ablagestapel
+        function displayTopCard(topCard) {
+            const imgFileName = getCardImageFileName(topCard.Color, topCard.Text);
+            const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
+
+            const topCardElement = document.getElementById("topCard");
+            topCardElement.src = imgUrl;
+            topCardElement.style.display = "block"; // Zeige die Top Card an
+        }
+
+        // Funktion zur Zuordnung der Farbe und des Textes zu einem Dateinamen
+        function getCardImageFileName(color, text) {
+            const colorMap = {
+                "Blue": "b",
+                "Red": "r",
+                "Green": "g",
+                "Yellow": "y",
+                "Black": "w"
+            };
+            const colorPrefix = colorMap[color] || "";
+
+            const textMap = {
+                "Reverse": "r",
+                "Skip": "s",
+                "Draw2": "d2",
+                "Zero": "0",
+                "One": "1",
+                "Two": "2",
+                "Three": "3",
+                "Four": "4",
+                "Five": "5",
+                "Six": "6",
+                "Seven": "7",
+                "Eight": "8",
+                "Nine": "9",
+                "Draw4": "d4",
+                "ChangeColor": "ild"
+            };
+            const textSuffix = textMap[text] || text;
+
+            return `${colorPrefix}${textSuffix}.png`;
+        }
+ 
     
