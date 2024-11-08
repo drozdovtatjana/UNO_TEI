@@ -1,47 +1,171 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>UNO Game</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNO Game</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Spiel Karten anzeigen</title>
 </head>
 <body>
-    <!-- Player Name Entry Modal -->
-    <div class="modal fade" id="playerNamesModal" tabindex="-1" aria-labelledby="playerNamesModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="playerNamesModalLabel">Enter Player Names</h5>
-                </div>
-                <div class="modal-body">
-                    <form id="playerNamesForm">
-                        <div class="form-group" id="playerInputs">
-                            <!-- Repeated fields for player names (JS will populate) -->
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" id="start-game-button" class="btn btn-primary" disabled>Start Game</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Game Table -->
-    <div class="game-table" id="playersContainer" style="display: none;">
-        <div id="topCard" class="mb-4"></div> <!-- Top card display -->
-        
-        <!-- Player containers -->
-        <div id="playerContainers" class="player-container"></div>
-    </div>
+    <h1>Starte ein neues Spiel</h1>
+    <button id="startGameBtn">Spiel starten</button>
+    
+    <h2>Handkarten</h2>
+    <div id="cardsContainer" style="display: flex;"></div>  
+    
+    <h2>Andere Spieler</h2>
+    <div id="otherPlayersContainer"></div> <!-- Container für nicht aktive Spieler -->
 
-    <!-- Bootstrap and jQuery JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="UNO.js"></script>
+    <h2>Ablagestapel (Top Card)</h2>
+    <img id="topCard" alt="Top Card">
+
+ 
+
+    <script>
+        document.getElementById("startGameBtn").addEventListener("click", startGame);
+
+        // Funktion zum Starten des Spiels
+        async function startGame() {
+            try {
+                const response = await fetch("https://nowaunoweb.azurewebsites.net/api/game/start", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify([
+                        "Player One",
+                        "Player Two",
+                        "Player Three",
+                        "Player Four"
+                    ])
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Spiel erfolgreich gestartet:", data);
+                    alert("Spiel erfolgreich gestartet! Spiel ID: " + data.Id);
+
+                    // Zeige die Handkarten des aktiven Spielers an
+                    document.getElementById("cardsContainer").style.display = "flex";
+                    displayCards(data.Players[0].Cards);
+
+                    // Zeige verdeckte Karten für die nicht aktiven Spieler an
+                    displayHiddenCardsForOtherPlayers(data.Players, 0);
+
+                    // Zeige die "Top Card" an
+                    displayTopCard(data.TopCard);
+
+                } else {
+                    console.error("Fehler beim Starten des Spiels:", response.status);
+                    alert("Fehler beim Starten des Spiels.");
+                }
+            } catch (error) {
+                console.error("Netzwerkfehler:", error);
+                alert("Netzwerkfehler. Bitte versuchen Sie es später erneut.");
+            }
+        }
+
+        // Funktion zur Anzeige der Handkarten des aktiven Spielers
+        function displayCards(cards) {
+            const container = document.getElementById("cardsContainer");
+            container.innerHTML = ""; // Lösche vorhandene Karten
+
+            cards.forEach(card => {
+                const imgFileName = getCardImageFileName(card.Color, card.Text);
+                const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
+
+                const img = document.createElement("img");
+                img.src = imgUrl;
+                img.alt = `${card.Color} ${card.Text}`;
+                img.style.width = "100px";
+                img.style.height = "auto";
+
+                container.appendChild(img);
+            });
+        }
+
+        // Funktion zur Anzeige der verdeckten Karten und Namen der nicht aktiven Spieler
+        function displayHiddenCardsForOtherPlayers(players, activePlayerIndex) {
+            const otherPlayersContainer = document.getElementById("otherPlayersContainer");
+            otherPlayersContainer.innerHTML = ""; // Vorherige Spieler-Container löschen
+
+            players.forEach((player, index) => {
+                if (index !== activePlayerIndex) {
+                    // Spielercontainer erstellen
+                    const playerContainer = document.createElement("div");
+                    playerContainer.classList.add("player-container");
+
+                    // Spielername hinzufügen
+                    const playerName = document.createElement("div");
+                    playerName.classList.add("player-name");
+                    playerName.textContent = player.Player;
+                    playerContainer.appendChild(playerName);
+
+                    // Kartencontainer erstellen und verdeckte Karten hinzufügen
+                    const hiddenCardsContainer = document.createElement("div");
+                    hiddenCardsContainer.classList.add("hidden-cards-container");
+
+                    player.Cards.forEach(() => {
+                        const hiddenCard = document.createElement("div");
+                        hiddenCard.classList.add("hidden-card");
+                        hiddenCardsContainer.appendChild(hiddenCard);
+                    });
+
+                    // Kartencontainer und Spielername zum Hauptcontainer hinzufügen
+                    playerContainer.appendChild(hiddenCardsContainer);
+                    otherPlayersContainer.appendChild(playerContainer);
+                }
+            });
+        }
+
+        // Funktion zur Anzeige der "Top Card" auf dem Ablagestapel
+        function displayTopCard(topCard) {
+            const imgFileName = getCardImageFileName(topCard.Color, topCard.Text);
+            const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
+
+            const topCardElement = document.getElementById("topCard");
+            topCardElement.src = imgUrl;
+            topCardElement.style.display = "block"; // Zeige die Top Card an
+        }
+
+        // Funktion zur Zuordnung der Farbe und des Textes zu einem Dateinamen
+        function getCardImageFileName(color, text) {
+            const colorMap = {
+                "Blue": "b",
+                "Red": "r",
+                "Green": "g",
+                "Yellow": "y",
+                "Black": "w"
+            };
+            const colorPrefix = colorMap[color] || "";
+
+            const textMap = {
+                "Reverse": "r",
+                "Skip": "s",
+                "Draw2": "d2",
+                "Zero": "0",
+                "One": "1",
+                "Two": "2",
+                "Three": "3",
+                "Four": "4",
+                "Five": "5",
+                "Six": "6",
+                "Seven": "7",
+                "Eight": "8",
+                "Nine": "9",
+                "Draw4": "d4",
+                "ChangeColor": "ild"
+            };
+            const textSuffix = textMap[text] || text;
+
+            return `${colorPrefix}${textSuffix}.png`;
+        }
+    </script>
 </body>
 </html>
+
 
