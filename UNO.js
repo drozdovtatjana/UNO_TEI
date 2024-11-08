@@ -1,5 +1,5 @@
 document.getElementById("startGameBtn").addEventListener("click", startGame);
-
+const gameId = await startGame();
 // Funktion zum Starten des Spiels
 async function startGame() {
     try {
@@ -22,7 +22,7 @@ async function startGame() {
             alert("Spiel erfolgreich gestartet! Spiel ID: " + data.Id);
 
             // Zeige die Handkarten des aktiven Spielers an
-            document.getElementById("cardsContainer").style.display = "flex";
+            document.getElementById("activePlayerCardsContainer").style.display = "flex";
             displayCards(data.Players[0].Cards);
 
             // Zeige verdeckte Karten für die nicht aktiven Spieler an
@@ -39,11 +39,15 @@ async function startGame() {
         console.error("Netzwerkfehler:", error);
         alert("Netzwerkfehler. Bitte versuchen Sie es später erneut.");
     }
+    // returns GameId
+    return data.Id
 }
+// Funktion schreibt SpielID aus startGame() in eine Variable, die über das ganze Spiel gleich bleibt
+
 
 // Funktion zur Anzeige der Handkarten des aktiven Spielers
 function displayCards(cards) {
-    const container = document.getElementById("cardsContainer");
+    const container = document.getElementById("activePlayerCardsContainer");
     container.innerHTML = ""; // Lösche vorhandene Karten
 
     cards.forEach(card => {
@@ -97,10 +101,10 @@ function displayHiddenCardsForOtherPlayers(players, activePlayerIndex) {
 // Funktion zur Anzeige der "Top Card" auf dem Ablagestapel
 function displayTopCard(topCard) {
     const imgFileName = getCardImageFileName(topCard.Color, topCard.Text);
-    const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
+    const imgPath = `/CardImages/${imgFileName}`;
 
     const topCardElement = document.getElementById("topCard");
-    topCardElement.src = imgUrl;
+    topCardElement.src = imgPath;
     topCardElement.style.display = "block"; // Zeige die Top Card an
 }
 
@@ -136,5 +140,82 @@ function getCardImageFileName(color, text) {
 
     return `${colorPrefix}${textSuffix}.png`;
 }
- 
+// Funktion zum Abrufen der Kartendaten der Karte am Ablegestapel
+async function fetchCardData(gameId) {
+    const apiUrl = `https://nowaunoweb.azurewebsites.net/api/cards/${gameId}`; 
     
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const cardData = await response.json();
+        return {
+            color: cardData.Color,
+            text: cardData.Text,
+            value: cardData.Value,
+            score: cardData.Score
+        };
+    } catch (error) {
+        console.error("Fehler beim Abrufen der Kartendaten:", error);
+        return null;
+    }
+}
+// Funktion zum ziehen einer Karte vom Abhebestapel, wenn keine Karte gelegt werden kann
+async function drawCard(gameId) {
+    const apiUrl = `https://nowaunoweb.azurewebsites.netapi/Game/DrawCard/${gameId}`; 
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const pickupCardData = await response.json();
+        return {
+            nextPlayer: pickupCardData.NextPlayer,
+            player: pickupCardData.Player,
+            card: {
+                color: pickupCardData.Card.Color,
+                text: pickupCardData.Card.Text,
+                value: pickupCardData.Card.Value,
+                score: pickupCardData.Card.Score
+            }
+        };
+    } catch (error) {
+        console.error("Fehler beim Abrufen der DrawCard-Daten:", error);
+        return null;
+    }
+}
+
+
+// Beispielaufrufe der Funktionen
+fetchCardData(gameId) 
+    .then(cardData => {
+        if (cardData) {
+            console.log("Kartendaten:", cardData);
+        } else {
+            console.log("Keine Kartendaten verfügbar.");
+        }
+    });
+
+drawCard(gameId) 
+    .then(drawCardData => {
+        if (drawCardData) {
+            console.log("DrawCard-Daten:", drawCardData);
+        } else {
+            console.log("Keine DrawCard-Daten verfügbar.");
+        }
+    });
