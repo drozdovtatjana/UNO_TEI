@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Spiel Karten anzeigen</title>
+    
 </head>
 <body>
     <h1>Hello</h1>
@@ -20,23 +20,23 @@
         <header>
             <h1>Menu</h1>
         </header>
-        <!-- Top Row (Player 1) -->
+        <!-- Top Row (Player Top) -->
         <div class="player player-top" style="grid-column: 2 / span 4;">
-            <div class="player-name">Player One</div>
-            <div class="hidden-cards-container" id="playerOneCards"></div>
+            <div class="player-name"></div>
+            <div class="hidden-cards-container" id="playerTopCards"></div>
         </div>
 
-        <!-- Left Column (Player 2) -->
+        <!-- Left Column (Player Left) -->
         <div class="player player-left" style="grid-row: 2 / span 2;">
-            <div class="player-name">Player Two</div>
-            <div class="hidden-cards-container" id="playerTwoCards"></div>
+            <div class="player-name"></div>
+            <div class="hidden-cards-container" id="playerLeftCards"></div>
         </div>
 
         <!-- Center Play Area (occupies 2x2 grid cells) -->
         <div class="play-area" style="grid-column: 3 / span 2; grid-row: 2 / span 2;">
             <div class="center-cards">
                 <div id="deckContainer">
-                    <img id="Deck" alt="Deck" />
+                    <img id="Deck" src="/CardImages/back.png"alt="Deck" />
                 </div>
                 <div id="topCardContainer">
                     <img id="topCard" alt="Top Card" />
@@ -45,10 +45,10 @@
             </div>
         </div>
 
-        <!-- Right Column (Player 3) -->
+        <!-- Right Column (Player Right) -->
         <div class="player player-right" style="grid-row: 2 / span 2;">
-            <div class="player-name">Player Three</div>
-            <div class="hidden-cards-container" id="playerThreeCards"></div>
+            <div class="player-name"></div>
+            <div class="hidden-cards-container" id="playerRightCards"></div>
         </div>
 
         <!-- Bottom Row (Player 4 - Active Player) -->
@@ -59,10 +59,10 @@
             </div>
         </div>
 
-             <!-- Bottom Row (Player 4 - Active Player) -->
-             <footer style="grid-column: 2 / span 4;">
-                Copyright...
-             </footer>
+        <!-- Bottom Row (Player 4 - Active Player) -->
+            <footer style="grid-column: 2 / span 4;">
+            Copyright...
+            </footer>
     </div>
 
 <script src="UNO.js"></script>

@@ -1,5 +1,7 @@
-document.getElementById("startGameBtn").addEventListener("click", startGame);
-const gameId = await startGame();
+const gameID =document.getElementById("startGameBtn").addEventListener("click", startGame);
+// const gameId = startGame();
+players = []; // Globale Variable zum speichern der Spielerreihenfolge um die Richtung anzeigen zu können
+
 // Funktion zum Starten des Spiels
 async function startGame() {
     try {
@@ -8,11 +10,11 @@ async function startGame() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify([
-                "Player One",
-                "Player Two",
-                "Player Three",
-                "Player Four"
+            body: JSON.stringify([ //hardcode -> hier sollen die Namenseingaben übergeben werden
+                "Player Nr 1",
+                "Player Nr 2",
+                "Player Nr 3",
+                "Player Nr 4"
             ])
         });
         
@@ -42,7 +44,7 @@ async function startGame() {
     // returns GameId
     return data.Id
 }
-// Funktion schreibt SpielID aus startGame() in eine Variable, die über das ganze Spiel gleich bleibt
+
 
 
 // Funktion zur Anzeige der Handkarten des aktiven Spielers
@@ -63,9 +65,51 @@ function displayCards(cards) {
         container.appendChild(img);
     });
 }
-
 // Funktion zur Anzeige der verdeckten Karten und Namen der nicht aktiven Spieler
 function displayHiddenCardsForOtherPlayers(players, activePlayerIndex) {
+    // Definiere die IDs der Container für die nicht-aktiven Spieler in der Reihenfolge: links, oben, rechts
+    const positionContainers = ["playerLeftCards", "playerTopCards", "playerRightCards"];
+
+    // Berechne die Reihenfolge der nicht-aktiven Spieler basierend auf dem aktiven Spieler
+    let playerPositions = [];
+    for (let i = 1; i < players.length; i++) {
+        playerPositions.push((activePlayerIndex + i) % players.length);
+    }
+
+    // Füge die nicht-aktiven Spieler in den entsprechenden Containern hinzu
+    playerPositions.forEach((playerIndex, positionIndex) => {
+        const player = players[playerIndex];
+        const containerId = positionContainers[positionIndex];
+        const hiddenCardsContainer = document.getElementById(containerId);
+
+        // Überprüfe, ob der Kartencontainer existiert
+        if (hiddenCardsContainer) {
+            hiddenCardsContainer.innerHTML = ""; // Vorherige Inhalte löschen
+
+            // Spielername dynamisch in das Eltern-Element des Kartencontainers einfügen
+            const playerContainer = hiddenCardsContainer.closest(".player");
+            if (playerContainer) {
+                const playerNameElement = playerContainer.querySelector(".player-name");
+                if (playerNameElement) {
+                    playerNameElement.textContent = player.Player; // Spielernamen setzen
+                }
+            }
+
+            // Füge für jede Karte eine verdeckte Karte hinzu
+            player.Cards.forEach(() => {
+                const hiddenCard = document.createElement("div");
+                hiddenCard.classList.add("hidden-card");
+                hiddenCardsContainer.appendChild(hiddenCard);
+            });
+        } else {
+            console.warn(`Container mit ID ${containerId} nicht gefunden.`);
+        }
+    });
+}
+
+
+// Funktion zur Anzeige der verdeckten Karten und Namen der nicht aktiven Spieler
+function displayHiddenCardsForOtherPlayersOLD(players, activePlayerIndex) {
     const otherPlayersContainer = document.getElementById("otherPlayersContainer");
     otherPlayersContainer.innerHTML = ""; // Vorherige Spieler-Container löschen
 
@@ -168,7 +212,7 @@ async function fetchCardData(gameId) {
         return null;
     }
 }
-// Funktion zum ziehen einer Karte vom Abhebestapel, wenn keine Karte gelegt werden kann
+// Funktion zum ziehen einer Karte vom Abhebestapel, wenn keine Karte gelegt werden kann (on click)
 async function drawCard(gameId) {
     const apiUrl = `https://nowaunoweb.azurewebsites.netapi/Game/DrawCard/${gameId}`; 
     try {
