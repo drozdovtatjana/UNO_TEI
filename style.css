@@ -1,67 +1,84 @@
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f8f4e3;
+
+#cardsContainer {
+            display: none; /* Hide container initially */
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+/* Container für die nicht aktiven Spieler */
+.player-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-.menu {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+/* Spielername */
+.player-name {
+    font-weight: bold;
+    margin-right: 15px;
 }
 
-.menu button {
-  display: block;
-  margin-bottom: 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
+/* Flexbox für die Karten der nicht aktiven Spieler */
+.hidden-cards-container {
+    display: flex;
+    position: relative;
+    width: 80vw; /* Gesamtbreite, die die Karten abdecken */
+    height: 160px; /* Höhe passend zur Kartenhöhe */
+    overflow: visible; /* Überschreiten der Containerbreite erlauben */
 }
 
-.game-table {
-  display: grid;
-  grid-template-areas: 
-      "menu top top top"
-      "left center center right"
-      "left bottom bottom right";
-  width: 80vw;
-  height: 80vh;
-  position: relative;
+/* Verdeckte Karten */
+.hidden-card {
+    width: 100px; /* Standardgröße der Karte */
+    height: 150px; /* Standardhöhe der Karte */
+    background-image: url('https://nowaunoweb.azurewebsites.net/Content/back.png'); /* Bild der Kartenrückseite */
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    transition: transform 0.2s; /* Animation bei Kartenbewegung */
 }
 
-.player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 10px;
+/* Staffelung der Karten durch z-index und left */
+.hidden-cards-container .hidden-card:nth-child(1) {
+    left: 0px;
+    z-index: 1;
 }
 
-.start-game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
+.hidden-cards-container .hidden-card:nth-child(2) {
+    left: 20px; /* Verschiebung der zweiten Karte */
+    z-index: 2; /* Z-Index der zweiten Karte */
 }
 
-#start-game-button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
+.hidden-cards-container .hidden-card:nth-child(3) {
+    left: 40px;
+    z-index: 3;
 }
 
-#start-game-button:hover {
-  background-color: #45a049;
+.hidden-cards-container .hidden-card:nth-child(4) {
+    left: 60px;
+    z-index: 4;
 }
+
+.hidden-cards-container .hidden-card:nth-child(5) {
+    left: 80px;
+    z-index: 5;
+}
+
+/* Top Card Styling */
+#topCard {
+    margin-top: 20px;
+    width: 100px;
+    height: auto;
+    display: none; /* Initially hidden */
+}
+
+    /* Top Card Styling */
+    #topCard {
+        margin-top: 20px;
+        width: 100px;
+        height: auto;
+        display: none; /* Initially hidden */
+    }
+ 
