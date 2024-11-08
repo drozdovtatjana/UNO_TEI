@@ -137,4 +137,4 @@ function getCardImageFileName(color, text) {
     return `${colorPrefix}${textSuffix}.png`;
 }
  
-// Funktion zum Starten eines neuen Spiels
+    
