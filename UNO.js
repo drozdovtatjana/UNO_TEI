@@ -22,7 +22,7 @@ async function startGame() {
             alert("Spiel erfolgreich gestartet! Spiel ID: " + data.Id);
 
             // Zeige die Handkarten des aktiven Spielers an
-            document.getElementById("cardsContainer").style.display = "flex";
+            document.getElementById("activePlayerCardsContainer").style.display = "flex";
             displayCards(data.Players[0].Cards);
 
             // Zeige verdeckte Karten für die nicht aktiven Spieler an
@@ -47,7 +47,7 @@ async function startGame() {
 
 // Funktion zur Anzeige der Handkarten des aktiven Spielers
 function displayCards(cards) {
-    const container = document.getElementById("cardsContainer");
+    const container = document.getElementById("activePlayerCardsContainer");
     container.innerHTML = ""; // Lösche vorhandene Karten
 
     cards.forEach(card => {
@@ -101,10 +101,10 @@ function displayHiddenCardsForOtherPlayers(players, activePlayerIndex) {
 // Funktion zur Anzeige der "Top Card" auf dem Ablagestapel
 function displayTopCard(topCard) {
     const imgFileName = getCardImageFileName(topCard.Color, topCard.Text);
-    const imgUrl = `https://nowaunoweb.azurewebsites.net/Content/Cards/${imgFileName}`;
+    const imgPath = `/CardImages/${imgFileName}`;
 
     const topCardElement = document.getElementById("topCard");
-    topCardElement.src = imgUrl;
+    topCardElement.src = imgPath;
     topCardElement.style.display = "block"; // Zeige die Top Card an
 }
 
