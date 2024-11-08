@@ -10,18 +10,53 @@
     <title>Spiel Karten anzeigen</title>
 </head>
 <body>
-<h1>Hello</h1>
+    <h1>Hello</h1>
     <h1>Starte ein neues Spiel</h1>
-    <button id="startGameBtn">Spiel starten</button>
-    
-    <h2>Handkarten</h2>
-    <div id="cardsContainer" style="display: flex;"></div>  
-    
-    <h2>Andere Spieler</h2>
-    <div id="otherPlayersContainer"></div> <!-- Container für nicht aktive Spieler -->
+    <button id="startGameBtn">Start Game</button>    
 
-    <h2>Ablagestapel (Top Card)</h2>
-    <img id="topCard" alt="Top Card">
+    <!-- Game Grid (6x4) -->
+    <div class="game-grid">
+        
+        <!-- Top Row (Player 1) -->
+        <div class="player player-top" style="grid-column: 2 / span 4;">
+            <div class="player-name">Player One</div>
+            <div class="hidden-cards-container" id="playerOneCards"></div>
+        </div>
+
+        <!-- Left Column (Player 2) -->
+        <div class="player player-left" style="grid-row: 2 / span 2;">
+            <div class="player-name">Player Two</div>
+            <div class="hidden-cards-container" id="playerTwoCards"></div>
+        </div>
+
+        <!-- Center Play Area (occupies 2x2 grid cells) -->
+        <div class="play-area" style="grid-column: 3 / span 2; grid-row: 2 / span 2;">
+            <div class="center-cards">
+                <div id="deckContainer">
+                    <img id="Deck" alt="Deck" />
+                </div>
+                <div id="topCardContainer">
+                    <img id="topCard" alt="Top Card" />
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Right Column (Player 3) -->
+        <div class="player player-right" style="grid-row: 2 / span 2;">
+            <div class="player-name">Player Three</div>
+            <div class="hidden-cards-container" id="playerThreeCards"></div>
+        </div>
+
+        <!-- Bottom Row (Player 4 - Active Player) -->
+        <div class="player player-bottom" style="grid-column: 2 / span 4;">
+            <div class="player-name">Player Four (Active)</div>
+            <div id="activePlayerCardsContainer">
+                <!-- Active player's cards will be displayed here -->
+            </div>
+        </div>
+
+    </div>
 
 <script src="UNO.js"></script>
 </body>
